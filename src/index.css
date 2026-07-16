@@ -1,0 +1,355 @@
+@import "tailwindcss";
+
+/* ============================================================
+   WombatSpeak — Design System
+   Thème dark minimaliste inspiré de Monkeytype
+   Couleur primaire : Cyan/Electric Blue #00d8ff
+   ============================================================ */
+
+@theme {
+  /* Couleurs principales */
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-tertiary: #1a1a26;
+  --color-bg-card: #16161f;
+  --color-bg-hover: #1e1e2a;
+
+  /* Texte */
+  --color-text-primary: #e2e2e8;
+  --color-text-secondary: #8888a0;
+  --color-text-muted: #4a4a60;
+  --color-text-dimmed: #2a2a3a;
+
+  /* Accent cyan */
+  --color-cyan: #00d8ff;
+  --color-cyan-glow: #00d8ff40;
+  --color-cyan-soft: #00d8ff20;
+  --color-cyan-dark: #006680;
+
+  /* Feedback */
+  --color-correct: #3a3a4a;
+  --color-incorrect: #ff4060;
+  --color-incorrect-glow: #ff406040;
+  --color-warning: #ffaa00;
+
+  /* Font families */
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* ============================================================
+   Base styles
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background-color: var(--color-cyan-soft);
+  color: var(--color-cyan);
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-dimmed);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-cyan {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-cyan-glow); }
+  50% { box-shadow: 0 0 20px 4px var(--color-cyan-glow); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes waveform {
+  0%, 100% { height: 4px; }
+  50% { height: 100%; }
+}
+
+@keyframes slideInFromBottom {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--color-cyan-glow)); }
+  50% { filter: drop-shadow(0 0 12px var(--color-cyan)); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideInFromBottom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ============================================================
+   Word display styles
+   ============================================================ */
+
+.word {
+  display: inline-block;
+  padding: 2px 0;
+  margin: 0 3px;
+  font-family: var(--font-mono);
+  font-size: 1.375rem;
+  line-height: 2.2;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.word--pending {
+  color: var(--color-text-muted);
+}
+
+.word--active {
+  color: var(--color-cyan);
+  text-shadow: 0 0 12px var(--color-cyan-glow);
+  transform: scale(1.05);
+}
+
+.word--correct {
+  color: var(--color-correct);
+}
+
+.word--incorrect {
+  color: var(--color-incorrect);
+  text-shadow: 0 0 8px var(--color-incorrect-glow);
+  text-decoration: underline;
+  text-decoration-color: var(--color-incorrect);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+/* ============================================================
+   Volume indicator bar
+   ============================================================ */
+
+.volume-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+}
+
+.volume-bar__segment {
+  width: 3px;
+  border-radius: 2px;
+  background-color: var(--color-cyan);
+  transition: height 0.08s ease-out;
+  min-height: 2px;
+}
+
+/* ============================================================
+   Mascot glow effect
+   ============================================================ */
+
+.mascot-glow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   Results cards
+   ============================================================ */
+
+.stat-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-text-dimmed);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--color-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--color-cyan-soft);
+}
+
+.stat-card__value {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-cyan);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card__label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   Button styles
+   ============================================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: transparent;
+  color: var(--color-cyan);
+  border: 1px solid var(--color-cyan);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.03em;
+}
+
+.btn-primary:hover {
+  background: var(--color-cyan-soft);
+  box-shadow: 0 0 20px var(--color-cyan-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary--recording {
+  border-color: var(--color-incorrect);
+  color: var(--color-incorrect);
+  animation: pulse-cyan 2s ease-in-out infinite;
+  animation-name: pulse-red;
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-incorrect-glow); }
+  50% { box-shadow: 0 0 20px 4px var(--color-incorrect-glow); }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-text-dimmed);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   Select / Dropdown styles
+   ============================================================ */
+
+.select-styled {
+  appearance: none;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-text-dimmed);
+  border-radius: 6px;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+}
+
+.select-styled:hover,
+.select-styled:focus {
+  border-color: var(--color-cyan);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .word {
+    font-size: 1.1rem;
+    line-height: 2;
+  }
+
+  .stat-card__value {
+    font-size: 2.2rem;
+  }
+}

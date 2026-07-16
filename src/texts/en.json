@@ -1,0 +1,66 @@
+{
+  "language": "English",
+  "code": "en-US",
+  "texts": [
+    {
+      "id": 1,
+      "title": "The brown fox",
+      "difficulty": "easy",
+      "words": "the quick brown fox jumps over the lazy dog that was sleeping peacefully in the sunny garden"
+    },
+    {
+      "id": 2,
+      "title": "Technology",
+      "difficulty": "medium",
+      "words": "modern technology transforms our daily lives with remarkable innovations that facilitate communication between people around the entire world"
+    },
+    {
+      "id": 3,
+      "title": "The journey",
+      "difficulty": "easy",
+      "words": "we traveled through the snowy mountains and green valleys to discover magnificent landscapes and picturesque villages along the way"
+    },
+    {
+      "id": 4,
+      "title": "Cooking",
+      "difficulty": "medium",
+      "words": "culinary traditions from around the world showcase incredible diversity of flavors techniques and ingredients that bring people together at the table"
+    },
+    {
+      "id": 5,
+      "title": "Artificial intelligence",
+      "difficulty": "hard",
+      "words": "machine learning algorithms enable computer systems to analyze considerable amounts of data to identify complex and predictive patterns automatically"
+    },
+    {
+      "id": 6,
+      "title": "Nature",
+      "difficulty": "easy",
+      "words": "birds sing in the trees while the sun rises gently above the calm and peaceful forest in the early morning"
+    },
+    {
+      "id": 7,
+      "title": "Sports",
+      "difficulty": "medium",
+      "words": "regular practice of physical activity contributes to maintaining good cardiovascular health and strengthens the immune system over time"
+    },
+    {
+      "id": 8,
+      "title": "Space exploration",
+      "difficulty": "hard",
+      "words": "space exploration represents one of the greatest scientific and technological challenges that humanity has faced for several decades now"
+    },
+    {
+      "id": 9,
+      "title": "Music",
+      "difficulty": "easy",
+      "words": "music soothes the soul and brings people together around universal melodies that touch the heart and inspire creativity"
+    },
+    {
+      "id": 10,
+      "title": "Sustainability",
+      "difficulty": "hard",
+      "words": "ecological transition requires a profound transformation of our economic models and consumption habits to preserve natural resources for future generations"
+    }
+  ]
+}

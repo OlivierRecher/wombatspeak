@@ -1,0 +1,66 @@
+{
+  "language": "Français",
+  "code": "fr-FR",
+  "texts": [
+    {
+      "id": 1,
+      "title": "Le renard brun",
+      "difficulty": "easy",
+      "words": "le rapide renard brun saute par dessus le chien paresseux qui dormait tranquillement dans le jardin ensoleillé"
+    },
+    {
+      "id": 2,
+      "title": "La technologie",
+      "difficulty": "medium",
+      "words": "la technologie moderne transforme notre quotidien avec des innovations remarquables qui facilitent la communication entre les personnes du monde entier"
+    },
+    {
+      "id": 3,
+      "title": "Le voyage",
+      "difficulty": "easy",
+      "words": "nous avons voyagé à travers les montagnes enneigées et les vallées verdoyantes pour découvrir des paysages magnifiques et des villages pittoresques"
+    },
+    {
+      "id": 4,
+      "title": "La cuisine française",
+      "difficulty": "medium",
+      "words": "la gastronomie française est reconnue dans le monde entier pour sa diversité ses saveurs raffinées et ses techniques de préparation minutieuses"
+    },
+    {
+      "id": 5,
+      "title": "L'intelligence artificielle",
+      "difficulty": "hard",
+      "words": "les algorithmes d'apprentissage automatique permettent aux systèmes informatiques d'analyser des quantités considérables de données pour identifier des modèles complexes et prédictifs"
+    },
+    {
+      "id": 6,
+      "title": "La nature",
+      "difficulty": "easy",
+      "words": "les oiseaux chantent dans les arbres pendant que le soleil se lève doucement au dessus de la forêt calme et paisible"
+    },
+    {
+      "id": 7,
+      "title": "Le sport",
+      "difficulty": "medium",
+      "words": "la pratique régulière d'une activité physique contribue au maintien d'une bonne santé cardiovasculaire et renforce le système immunitaire"
+    },
+    {
+      "id": 8,
+      "title": "L'espace",
+      "difficulty": "hard",
+      "words": "l'exploration spatiale représente l'un des plus grands défis scientifiques et technologiques auxquels l'humanité est confrontée depuis plusieurs décennies"
+    },
+    {
+      "id": 9,
+      "title": "La musique",
+      "difficulty": "easy",
+      "words": "la musique adoucit les mœurs et rassemble les gens autour de mélodies universelles qui touchent le cœur et l'âme"
+    },
+    {
+      "id": 10,
+      "title": "Le développement durable",
+      "difficulty": "hard",
+      "words": "la transition écologique nécessite une transformation profonde de nos modèles économiques et de nos habitudes de consommation pour préserver les ressources naturelles"
+    }
+  ]
+}
