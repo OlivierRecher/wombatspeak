@@ -5,7 +5,7 @@ import VolumeIndicator from './components/VolumeIndicator';
 import Results from './components/Results';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useAudioAnalyzer } from './hooks/useAudioAnalyzer';
-import { normalizeWord, WordStatus, calculateMetrics } from './utils/textComparison';
+import { normalizeWord, WordStatus, calculateMetrics, alignWords } from './utils/textComparison';
 import { similarity, MATCH_THRESHOLD } from './utils/levenshtein';
 
 // Import des textes bilingues
@@ -18,9 +18,10 @@ const textData = { fr: frTexts, en: enTexts };
  * États de l'application
  */
 const AppState = {
-  IDLE: 'idle',       // En attente de démarrage
-  RUNNING: 'running', // Exercice en cours
-  DONE: 'done',       // Exercice terminé
+  IDLE: 'idle',       // En attente — "appuie sur une touche pour commencer"
+  READY: 'ready',     // Micro actif, en attente de la première voix
+  RUNNING: 'running', // Timer démarré, exercice en cours
+  DONE: 'done',       // Exercice terminé — résultats + transcription
 };
 
 /**
@@ -38,18 +39,25 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [metrics, setMetrics] = useState(null);
   const [silenceWarning, setSilenceWarning] = useState(false);
-  const [countdown, setCountdown] = useState(null);
+  // Stocke les mots prononcés pour la transcription finale
+  const [spokenWordsLog, setSpokenWordsLog] = useState([]);
 
   // Refs pour ne pas recréer les callbacks
   const startTimeRef = useRef(null);
+  const timerStartedRef = useRef(false);
   const currentIndexRef = useRef(0);
   const wordStatusesRef = useRef([]);
   const wordsRef = useRef([]);
+  const appStateRef = useRef(AppState.IDLE);
+  const spokenWordsLogRef = useRef([]);
+  const stopListeningRef = useRef(() => {});
 
   // Synchronise les refs avec l'état
   useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
   useEffect(() => { wordStatusesRef.current = wordStatuses; }, [wordStatuses]);
   useEffect(() => { wordsRef.current = words; }, [words]);
+  useEffect(() => { appStateRef.current = appState; }, [appState]);
+  useEffect(() => { spokenWordsLogRef.current = spokenWordsLog; }, [spokenWordsLog]);
 
   // --- Sélection du texte ---
   const availableTexts = useMemo(() => {
@@ -64,10 +72,13 @@ export default function App() {
     const idx = Math.floor(Math.random() * availableTexts.length);
     const selected = availableTexts[idx];
     setCurrentText(selected);
-    const textWords = selected.words.split(/\s+/);
+    // On remplace les tirets par des espaces pour que "au-dessus" devienne deux mots distincts
+    // Cela rend la reconnaissance vocale beaucoup plus tolérante
+    const textWords = selected.words.replace(/-/g, ' ').split(/\s+/);
     setWords(textWords);
     setWordStatuses(textWords.map(() => WordStatus.PENDING));
     setCurrentIndex(0);
+    setSpokenWordsLog([]);
   }, [availableTexts]);
 
   // Sélectionne un texte initial
@@ -77,11 +88,11 @@ export default function App() {
 
   // --- Callback de silence ---
   const handleSilenceDetected = useCallback(() => {
-    if (appState === 'running') {
+    if (appStateRef.current === AppState.RUNNING) {
       setSilenceWarning(true);
       setTimeout(() => setSilenceWarning(false), 2000);
     }
-  }, [appState]);
+  }, []);
 
   // --- Audio Analyzer ---
   const {
@@ -97,6 +108,13 @@ export default function App() {
 
   // --- Fin de l'exercice ---
   const finishExercise = useCallback(() => {
+    if (!timerStartedRef.current) {
+      // Timer never started — no voice detected, just reset
+      setAppState(AppState.IDLE);
+      stopAnalyzer();
+      stopListeningRef.current();
+      return;
+    }
     const elapsed = Date.now() - startTimeRef.current;
     const results = wordsRef.current.map((word, i) => ({
       word,
@@ -106,58 +124,67 @@ export default function App() {
     setMetrics(m);
     setAppState(AppState.DONE);
     stopAnalyzer();
+    stopListeningRef.current();
   }, [stopAnalyzer]);
 
-  // --- Callback de résultat vocal ---
-  const handleSpeechResult = useCallback((finalText) => {
-    const spokenWords = finalText
+  // --- Callback de mise à jour globale (interim + final) ---
+  const updateAlignment = useCallback((allText, isFinalChunk = false) => {
+    // Tolérance : on sépare les mots liés par des tirets
+    const allWords = allText
+      .replace(/-/g, ' ')
       .split(/\s+/)
       .filter((w) => w.length > 0);
 
-    if (spokenWords.length === 0) return;
+    if (allWords.length === 0) return;
 
-    let idx = currentIndexRef.current;
-    const statuses = [...wordStatusesRef.current];
-    const expectedWords = wordsRef.current;
-
-    for (let i = 0; i < spokenWords.length && idx < expectedWords.length; i++) {
-      const expected = normalizeWord(expectedWords[idx]);
-      const spoken = normalizeWord(spokenWords[i]);
-
-      if (!spoken) continue;
-
-      const score = similarity(expected, spoken);
-
-      if (score >= MATCH_THRESHOLD) {
-        statuses[idx] = WordStatus.CORRECT;
-        idx++;
-      } else {
-        // Vérifie si le mot parlé correspond au mot SUIVANT (skip detection)
-        if (idx + 1 < expectedWords.length) {
-          const nextExpected = normalizeWord(expectedWords[idx + 1]);
-          const nextScore = similarity(nextExpected, spoken);
-          if (nextScore >= MATCH_THRESHOLD) {
-            statuses[idx] = WordStatus.INCORRECT;
-            idx++;
-            statuses[idx] = WordStatus.CORRECT;
-            idx++;
-            continue;
-          }
-        }
-        statuses[idx] = WordStatus.INCORRECT;
-        idx++;
-      }
+    // Démarrer le timer au premier son de voix
+    if (!timerStartedRef.current) {
+      timerStartedRef.current = true;
+      startTimeRef.current = Date.now();
+      setAppState(AppState.RUNNING);
     }
 
-    setWordStatuses(statuses);
-    setCurrentIndex(idx);
+    const expectedWords = wordsRef.current;
+    
+    // On utilise notre nouvel algorithme DP pour trouver l'alignement parfait
+    const { statuses, currentIndex: newIdx } = alignWords(expectedWords, allWords);
+    
+    // Convertir les statuts d'objets complets vers un simple tableau de strings 
+    const newWordStatuses = statuses.map((s, i) => {
+      // Évite le clignotement rouge sur les mots en cours de prononciation (interim)
+      if (!isFinalChunk && s.status === WordStatus.INCORRECT) {
+        // Si c'est l'un des 2 derniers mots atteints, on le remet en PENDING
+        // pour ne pas afficher l'erreur prématurément ni dupliquer le curseur ACTIVE
+        if (i >= newIdx - 2) {
+          return WordStatus.PENDING;
+        }
+      }
+      return s.status;
+    });
+    
+    setWordStatuses(newWordStatuses);
+    setCurrentIndex(newIdx);
 
-    // Vérifie si l'exercice est terminé
-    if (idx >= expectedWords.length) {
-      // Petit délai pour l'animation du dernier mot
+    // On sauvegarde toujours l'ensemble des mots prononcés pour la vue Results
+    setSpokenWordsLog(allWords);
+
+    // Vérifie si l'exercice est terminé (si on a atteint ou dépassé la fin)
+    if (newIdx >= expectedWords.length) {
       setTimeout(() => finishExercise(), 300);
     }
   }, [finishExercise]);
+
+  // --- Callback pour les résultats finaux ---
+  const handleSpeechResult = useCallback((finalText) => {
+    updateAlignment(finalText, true);
+  }, [updateAlignment]);
+
+  // --- Callback pour la mise à jour interim (surlignage rapide) ---
+  const handleInterimUpdate = useCallback((allText) => {
+    // onInterimUpdate nous donne DEJA tout le texte (accumulated finals + current interim)
+    // On l'utilise pour le surlignage en temps réel sans affecter le log final
+    updateAlignment(allText, false);
+  }, [updateAlignment]);
 
   // --- Speech Recognition ---
   const langCode = textData[language]?.code || 'fr-FR';
@@ -173,37 +200,34 @@ export default function App() {
     continuous: true,
     interimResults: true,
     onResult: handleSpeechResult,
-    onEnd: () => {
-      // Si l'exercice est encore en cours et que la reconnaissance s'arrête
-      // sans avoir terminé, ne pas finir l'exercice
-    },
+    onInterimUpdate: handleInterimUpdate,
+    onEnd: () => {},
     onError: (error) => {
       console.warn('Speech error:', error);
     },
   });
 
-  // --- Démarrage de l'exercice ---
-  const startExercise = useCallback(async () => {
-    // Countdown 3-2-1
-    setCountdown(3);
-    for (let i = 3; i >= 1; i--) {
-      setCountdown(i);
-      await new Promise((r) => setTimeout(r, 700));
-    }
-    setCountdown(null);
+  // Assigne la fonction à la ref pour éviter les dépendances circulaires
+  stopListeningRef.current = stopListening;
 
+  // --- Démarrage de l'exercice (appel micro, attente voix) ---
+  const startExercise = useCallback(async () => {
     // Reset état
-    const textWords = words.length > 0 ? words : [];
+    const textWords = wordsRef.current;
     setWordStatuses(textWords.map(() => WordStatus.PENDING));
     setCurrentIndex(0);
     setMetrics(null);
-    startTimeRef.current = Date.now();
-    setAppState(AppState.RUNNING);
+    setSpokenWordsLog([]);
+    timerStartedRef.current = false;
+    startTimeRef.current = null;
+
+    // Passe en mode READY (micro actif, en attente de voix)
+    setAppState(AppState.READY);
 
     // Démarre l'analyse audio et la reconnaissance vocale
     await startAnalyzer();
     startListening();
-  }, [words, startAnalyzer, startListening]);
+  }, [startAnalyzer, startListening]);
 
   // --- Arrêt de l'exercice ---
   const stopExercise = useCallback(() => {
@@ -211,24 +235,35 @@ export default function App() {
     finishExercise();
   }, [stopListening, finishExercise]);
 
-  // --- Restart avec le même texte ---
-  const handleRestart = useCallback(() => {
+  // --- Restart avec le même texte (directement en mode écoute, pas besoin de recliquer) ---
+  const handleRestart = useCallback(async () => {
     stopListening();
     stopAnalyzer();
-    setAppState(AppState.IDLE);
-    setMetrics(null);
-    const textWords = words;
+
+    // Reset tout et relance directement
+    const textWords = wordsRef.current;
     setWordStatuses(textWords.map(() => WordStatus.PENDING));
     setCurrentIndex(0);
-  }, [words, stopListening, stopAnalyzer]);
+    setMetrics(null);
+    setSpokenWordsLog([]);
+    timerStartedRef.current = false;
+    startTimeRef.current = null;
+
+    // Passe directement en READY → attend la voix
+    setAppState(AppState.READY);
+
+    await startAnalyzer();
+    startListening();
+  }, [stopListening, stopAnalyzer, startAnalyzer, startListening]);
 
   // --- Nouveau texte ---
-  const handleNewText = useCallback(() => {
+  const handleNewText = useCallback(async () => {
     stopListening();
     stopAnalyzer();
-    setAppState(AppState.IDLE);
     setMetrics(null);
+    setSpokenWordsLog([]);
     selectRandomText();
+    setAppState(AppState.IDLE);
   }, [stopListening, stopAnalyzer, selectRandomText]);
 
   // --- Changement de langue ---
@@ -245,7 +280,62 @@ export default function App() {
     setMetrics(null);
   }, []);
 
+  // --- Raccourcis clavier ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const state = appStateRef.current;
+      const tag = e.target.tagName;
+
+      // Ignore si on est dans un input/select
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+      if (state === AppState.IDLE) {
+        // N'importe quelle touche pour commencer
+        if (e.key === 'Tab') {
+           e.preventDefault();
+           handleNewText();
+        } else {
+           e.preventDefault();
+           startExercise();
+        }
+      } else if (state === AppState.DONE) {
+        if (e.key === 'Tab') {
+          // Tab → nouveau texte
+          e.preventDefault();
+          handleNewText();
+        } else if (e.key === 'Enter') {
+          // Enter → recommencer le même texte
+          e.preventDefault();
+          handleRestart();
+        } else if (e.key === 'Escape') {
+          // Escape → nouveau texte
+          e.preventDefault();
+          handleNewText();
+        }
+      } else if (state === AppState.RUNNING || state === AppState.READY) {
+        if (e.key === 'Escape') {
+          // Escape → arrêter l'exercice
+          e.preventDefault();
+          stopExercise();
+        } else if (e.key === 'Tab') {
+          // Tab → nouveau texte direct
+          e.preventDefault();
+          handleNewText();
+        } else if (e.key === 'Enter') {
+          // Enter → restart direct
+          e.preventDefault();
+          handleRestart();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [startExercise, handleRestart, handleNewText, stopExercise]);
+
   // --- Rendu ---
+  const isActive = appState === AppState.RUNNING || appState === AppState.READY;
+
   return (
     <div className="flex flex-col min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
       {/* Header */}
@@ -254,128 +344,98 @@ export default function App() {
         onLanguageChange={handleLanguageChange}
         difficulty={difficulty}
         onDifficultyChange={handleDifficultyChange}
-        isRunning={appState === AppState.RUNNING}
+        isRunning={isActive}
       />
 
       {/* Contenu principal */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8" style={{ maxWidth: '860px', margin: '0 auto', width: '100%' }}>
-
-        {/* Titre du texte */}
-        {currentText && appState !== AppState.DONE && (
-          <div className="mb-4 text-center animate-fade-in">
-            <span
-              className="inline-block px-3 py-1 rounded-full text-xs"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--color-text-secondary)',
-                background: 'var(--color-bg-tertiary)',
-                border: '1px solid var(--color-text-dimmed)',
-              }}
-            >
-              {currentText.title}
-              <span className="ml-2" style={{ color: 'var(--color-text-muted)' }}>
-                • {currentText.difficulty}
-              </span>
-            </span>
-          </div>
-        )}
-
-        {/* Countdown overlay */}
-        {countdown !== null && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(10, 10, 15, 0.85)' }}
-          >
-            <span
-              className="animate-fade-in"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '6rem',
-                fontWeight: 700,
-                color: 'var(--color-cyan)',
-                textShadow: '0 0 40px var(--color-cyan-glow)',
-              }}
-            >
-              {countdown}
-            </span>
-          </div>
-        )}
+      <main 
+        className="flex-1 flex flex-col items-center justify-center px-4 py-8" 
+        style={{ 
+          maxWidth: '1000px', 
+          margin: '0 auto', 
+          width: '100%',
+          cursor: appState === AppState.IDLE ? 'pointer' : 'default' 
+        }}
+        onClick={() => {
+          if (appState === AppState.IDLE) {
+            startExercise();
+          }
+        }}
+      >
 
         {/* Zone de texte */}
         {appState !== AppState.DONE && (
-          <div className="w-full mb-6">
+          <div className="w-full mb-8 relative">
+            
+            {/* Titre / Info au dessus du texte (discret) */}
+            {currentText && appState === AppState.IDLE && (
+              <div 
+                className="absolute -top-8 left-0 right-0 text-center animate-fade-in"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}
+              >
+                {currentText.title} • {currentText.difficulty}
+              </div>
+            )}
+
             <TextDisplay
               words={words}
               wordStatuses={wordStatuses}
-              currentIndex={appState === AppState.RUNNING ? currentIndex : -1}
-            />
-          </div>
-        )}
-
-        {/* Barre de contrôle (idle ou running) */}
-        {appState !== AppState.DONE && (
-          <div className="flex items-center justify-between w-full mb-6 animate-fade-in">
-            {/* Volume indicator */}
-            <VolumeIndicator
-              volume={volume}
-              isSilent={isSilent}
-              isActive={appState === AppState.RUNNING}
+              currentIndex={isActive ? currentIndex : -1}
             />
 
-            {/* Bouton central */}
-            <div className="flex items-center gap-3">
-              {appState === AppState.IDLE && (
-                <>
-                  {!isSupported ? (
-                    <div
-                      className="text-sm px-4 py-2 rounded-lg"
-                      style={{
-                        color: 'var(--color-incorrect)',
-                        background: 'var(--color-incorrect-glow)',
-                        fontFamily: 'var(--font-mono)',
-                      }}
-                    >
-                      ⚠ Web Speech API non supportée par votre navigateur
-                    </div>
-                  ) : (
-                    <button
-                      id="btn-start"
-                      className="btn-primary"
-                      onClick={startExercise}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 1a2 2 0 0 0-2 2v4a2 2 0 1 0 4 0V3a2 2 0 0 0-2-2Z" />
-                        <path d="M4 6.5a.5.5 0 0 0-1 0v.5A5 5 0 0 0 7.5 12v2.5h-2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-2V12A5 5 0 0 0 13 7V6.5a.5.5 0 0 0-1 0V7a4 4 0 0 1-8 0v-.5Z" />
-                      </svg>
-                      commencer
-                    </button>
-                  )}
-                </>
-              )}
-
-              {appState === AppState.RUNNING && (
-                <button
-                  id="btn-stop"
-                  className="btn-primary btn-primary--recording"
-                  onClick={stopExercise}
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="3" y="3" width="10" height="10" rx="1" />
+            {/* Tap to start indicator */}
+            {appState === AppState.IDLE && (
+              <div className="flex justify-center mt-12 animate-pulse mobile-only" style={{ color: 'var(--color-text-muted)' }}>
+                <div className="flex flex-col items-center gap-2">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 5v14l11-7z"/>
                   </svg>
-                  arrêter
-                </button>
-              )}
-            </div>
+                  <span className="text-center px-4" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
+                    {language === 'fr' ? 'Appuie sur l\'écran ou sur une touche pour commencer' : 'Tap screen or press any key to start'}
+                  </span>
+                </div>
+              </div>
+            )}
 
-            {/* Compteur de progression */}
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
-              {appState === AppState.RUNNING && (
-                <span style={{ color: 'var(--color-text-secondary)' }}>
-                  <span style={{ color: 'var(--color-cyan)' }}>{currentIndex}</span>
-                  <span style={{ color: 'var(--color-text-muted)' }}> / {words.length}</span>
-                </span>
-              )}
-            </div>
+            {/* Controls (en dessous du texte, centrés) */}
+            {(appState === AppState.RUNNING || appState === AppState.READY) && (
+              <div className="flex justify-center gap-6 mt-12 animate-fade-in">
+                {/* Stop button */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); stopExercise(); }}
+                  className="control-btn hover:text-[var(--color-incorrect)]"
+                  title="Stop (Esc)"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="6" y="6" width="12" height="12" rx="2" ry="2"/>
+                  </svg>
+                </button>
+
+                {/* Restart button */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleRestart(); }}
+                  className="control-btn hover:text-[var(--color-text-primary)]"
+                  title="Restart (Enter)"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                  </svg>
+                </button>
+
+                {/* Skip / Next button */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleNewText(); }}
+                  className="control-btn hover:text-[var(--color-text-primary)]"
+                  title="Next Text (Tab)"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 4l10 8-10 8V4z" />
+                    <path d="M19 4v16" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -395,25 +455,13 @@ export default function App() {
           </div>
         )}
 
-        {/* Transcription en cours (interim) */}
-        {appState === AppState.RUNNING && interimTranscript && (
-          <div
-            className="text-center mt-2 animate-fade-in"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.8rem',
-              color: 'var(--color-text-muted)',
-              fontStyle: 'italic',
-            }}
-          >
-            {interimTranscript}
-          </div>
-        )}
-
         {/* Résultats */}
         {appState === AppState.DONE && (
           <Results
             metrics={metrics}
+            words={words}
+            wordStatuses={wordStatuses}
+            spokenWords={spokenWordsLog}
             onRestart={handleRestart}
             onNewText={handleNewText}
           />
@@ -422,7 +470,7 @@ export default function App() {
 
       {/* Footer */}
       <footer
-        className="text-center py-4 px-4"
+        className="text-center py-4 px-4 desktop-only"
         style={{
           fontFamily: 'var(--font-mono)',
           fontSize: '0.7rem',
@@ -432,7 +480,19 @@ export default function App() {
       >
         <span style={{ color: 'var(--color-cyan)', opacity: 0.5 }}>wombatspeak</span>
         {' '}— open source voice training •{' '}
-        <span style={{ color: 'var(--color-text-muted)' }}>100% client-side</span>
+        <span style={{ color: 'var(--color-text-muted)' }}>
+          {appState === AppState.DONE ? (
+            <>
+              <span className="kbd">tab</span> / <span className="kbd">enter</span> recommencer • <span className="kbd">esc</span> nouveau texte
+            </>
+          ) : appState === AppState.IDLE ? (
+            <>any key to start</>
+          ) : (
+            <>
+              <span className="kbd">tab</span> next • <span className="kbd">enter</span> restart • <span className="kbd">esc</span> stop
+            </>
+          )}
+        </span>
       </footer>
     </div>
   );

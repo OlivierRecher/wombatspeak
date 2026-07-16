@@ -47,34 +47,13 @@ export default function TextDisplay({ words, wordStatuses, currentIndex }) {
   return (
     <div
       ref={containerRef}
-      className="relative overflow-y-auto"
+      className="w-full text-left"
       style={{
-        maxHeight: '280px',
-        padding: '1.5rem',
-        borderRadius: '12px',
-        background: 'var(--color-bg-secondary)',
-        border: '1px solid var(--color-text-dimmed)',
-        lineHeight: '2.2',
+        lineHeight: '1.5',
       }}
     >
-      {/* Gradient overlay en haut et en bas pour l'effet de fondu */}
-      <div
-        className="pointer-events-none absolute top-0 left-0 right-0 z-10"
-        style={{
-          height: '24px',
-          background: 'linear-gradient(to bottom, var(--color-bg-secondary), transparent)',
-        }}
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 z-10"
-        style={{
-          height: '24px',
-          background: 'linear-gradient(to top, var(--color-bg-secondary), transparent)',
-        }}
-      />
-
       {/* Mots */}
-      <div className="relative z-0 py-2">
+      <div className="relative z-0">
         {words.map((word, index) => {
           const status = wordStatuses[index] || 'pending';
           const isActive = index === currentIndex;

@@ -7,33 +7,39 @@
    ============================================================ */
 
 @theme {
-  /* Couleurs principales */
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #12121a;
-  --color-bg-tertiary: #1a1a26;
-  --color-bg-card: #16161f;
-  --color-bg-hover: #1e1e2a;
+  /* Couleurs principales (Monkeytype Serika Dark) */
+  --color-bg-primary: #323437;
+  --color-bg-secondary: #2c2e31;
+  --color-bg-tertiary: #2c2e31;
+  --color-bg-card: #2c2e31;
+  --color-bg-hover: #3d4044;
 
   /* Texte */
-  --color-text-primary: #e2e2e8;
-  --color-text-secondary: #8888a0;
-  --color-text-muted: #4a4a60;
-  --color-text-dimmed: #2a2a3a;
+  --color-text-primary: #d1d0c5;
+  --color-text-secondary: #646669;
+  --color-text-muted: #646669;
+  --color-text-dimmed: #4a4c50;
 
-  /* Accent cyan */
+  /* Accent (Jaune Monkeytype ou Cyan ?) L'utilisateur veut garder l'esprit cyberpunk du Wombat ou Monkeytype pur ?
+     Il a dit : "le design doit être plus proche de la capture d'écran" -> la capture montre du jaune. 
+     Mais avant il disait "Cyan/Bleu Électrique". Faisons un mix : gardons le cyan de wombat, mais appliquons le layout Monkeytype. 
+     Ah la capture d'écran est le monkeytype original. Je vais mettre le cyan en accent pour garder l'identité. */
   --color-cyan: #00d8ff;
   --color-cyan-glow: #00d8ff40;
   --color-cyan-soft: #00d8ff20;
   --color-cyan-dark: #006680;
+  
+  /* Accent jaune Monkeytype si préféré (on garde le cyan comme demandé au 1er message) */
+  --color-accent: #e2b714; 
 
   /* Feedback */
-  --color-correct: #3a3a4a;
-  --color-incorrect: #ff4060;
-  --color-incorrect-glow: #ff406040;
-  --color-warning: #ffaa00;
+  --color-correct: #d1d0c5;
+  --color-incorrect: #ca4754;
+  --color-incorrect-glow: transparent;
+  --color-warning: #e2b714;
 
   /* Font families */
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
@@ -154,13 +160,14 @@ body {
 
 .word {
   display: inline-block;
-  padding: 2px 0;
-  margin: 0 3px;
+  padding: 0;
+  margin: 0 4px;
   font-family: var(--font-mono);
-  font-size: 1.375rem;
-  line-height: 2.2;
-  letter-spacing: 0.02em;
-  transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.15s ease;
+  font-size: 1.8rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  transition: color 0.1s ease;
+  position: relative;
 }
 
 .word--pending {
@@ -168,9 +175,22 @@ body {
 }
 
 .word--active {
-  color: var(--color-cyan);
-  text-shadow: 0 0 12px var(--color-cyan-glow);
-  transform: scale(1.05);
+  /* In Monkeytype, the active word isn't really colored differently until typed, 
+     but for voice we need to know where we are. We'll use the cyan accent. */
+  color: var(--color-text-muted);
+}
+
+/* Caret for active word */
+.word--active::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 10%;
+  bottom: 10%;
+  width: 3px;
+  background-color: var(--color-cyan);
+  animation: blink 1s step-end infinite;
+  border-radius: 2px;
 }
 
 .word--correct {
@@ -179,7 +199,6 @@ body {
 
 .word--incorrect {
   color: var(--color-incorrect);
-  text-shadow: 0 0 8px var(--color-incorrect-glow);
   text-decoration: underline;
   text-decoration-color: var(--color-incorrect);
   text-underline-offset: 4px;
@@ -218,34 +237,22 @@ body {
    ============================================================ */
 
 .stat-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-text-dimmed);
-  border-radius: 12px;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem;
   text-align: center;
-  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.stat-card:hover {
-  border-color: var(--color-cyan);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px var(--color-cyan-soft);
 }
 
 .stat-card__value {
   font-family: var(--font-mono);
-  font-size: 3rem;
-  font-weight: 700;
+  font-size: 4rem;
+  font-weight: 400;
   color: var(--color-cyan);
   line-height: 1;
   margin-bottom: 0.5rem;
 }
 
 .stat-card__label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 1rem;
+  font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
 
@@ -343,6 +350,37 @@ body {
    Responsive
    ============================================================ */
 
+/* ============================================================
+   Keyboard shortcut badges (like Monkeytype)
+   ============================================================ */
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-text-dimmed);
+  border-radius: 4px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   Transcription word hover
+   ============================================================ */
+
+.transcription-word {
+  transition: background 0.15s ease, transform 0.15s ease;
+  cursor: default;
+}
+
+.transcription-word:hover {
+  background: var(--color-bg-hover) !important;
+  transform: scale(1.02);
+}
+
 @media (max-width: 768px) {
   .word {
     font-size: 1.1rem;
@@ -352,4 +390,41 @@ body {
   .stat-card__value {
     font-size: 2.2rem;
   }
+
+  .desktop-only {
+    display: none !important;
+  }
 }
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+   Control Buttons
+   ============================================================ */
+.control-btn {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-text-dimmed);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-text-secondary);
+  transform: scale(1.05);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+

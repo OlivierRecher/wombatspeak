@@ -24,10 +24,15 @@ export function useAudioAnalyzer({
   const animationFrameRef = useRef(null);
   const silenceStartRef = useRef(null);
   const isActiveRef = useRef(false);
+  const streamRef = useRef(null);
+  const analyzerIdRef = useRef(0);
 
   // Démarre la capture et l'analyse audio
   const startAnalyzer = useCallback(async () => {
     try {
+      const currentId = ++analyzerIdRef.current;
+      isActiveRef.current = true;
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -35,6 +40,12 @@ export function useAudioAnalyzer({
           autoGainControl: true,
         },
       });
+
+      // Si on a appelé stopAnalyzer() ou relancé startAnalyzer() entre temps
+      if (!isActiveRef.current || currentId !== analyzerIdRef.current) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        return;
+      }
 
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const analyzer = audioContext.createAnalyser();
@@ -47,7 +58,7 @@ export function useAudioAnalyzer({
       audioContextRef.current = audioContext;
       analyzerRef.current = analyzer;
       sourceRef.current = source;
-      isActiveRef.current = true;
+      streamRef.current = mediaStream;
       setStream(mediaStream);
 
       // Boucle d'analyse
@@ -99,17 +110,18 @@ export function useAudioAnalyzer({
     }
 
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close();
+      audioContextRef.current.close().catch(() => {});
     }
 
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
 
     setVolume(0);
     setIsSilent(true);
     setStream(null);
-  }, [stream]);
+  }, []);
 
   // Nettoyage
   useEffect(() => {

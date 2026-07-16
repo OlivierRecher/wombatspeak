@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { normalizeWord, alignWords } from '../utils/textComparison';
+import { similarity, MATCH_THRESHOLD } from '../utils/levenshtein';
 
 /**
  * Écran de résultats affiché à la fin d'un exercice.
- * Montre les métriques (WPM, précision) avec un design premium.
+ * Montre les métriques (WPM, précision) + transcription comparée.
  */
-export default function Results({ metrics, onRestart, onNewText }) {
+export default function Results({ metrics, words, wordStatuses, spokenWords, onRestart, onNewText }) {
+  const [showTranscription, setShowTranscription] = useState(true);
+
   if (!metrics) return null;
 
   const { wpm, accuracy, correct, incorrect, total } = metrics;
@@ -25,8 +29,24 @@ export default function Results({ metrics, onRestart, onNewText }) {
     return '🎯 Entraîne-toi encore !';
   };
 
+  // Construit la comparaison mot par mot avec ce qui a été dit
+  const buildTranscription = () => {
+    if (!words || !spokenWords) return [];
+
+    // On utilise l'alignement DP pour avoir le résultat final parfait
+    const { statuses } = alignWords(words, spokenWords);
+
+    return words.map((expected, i) => ({
+      expected,
+      spoken: statuses[i].spoken,
+      status: statuses[i].status
+    }));
+  };
+
+  const transcription = buildTranscription();
+
   return (
-    <div className="animate-slide-in" style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+    <div className="animate-slide-in" style={{ maxWidth: '700px', margin: '0 auto', width: '100%' }}>
       {/* Message */}
       <p
         className="text-center mb-8"
@@ -75,6 +95,104 @@ export default function Results({ metrics, onRestart, onNewText }) {
         </div>
       </div>
 
+      {/* Transcription comparée */}
+      <div className="mb-8">
+        <button
+          className="btn-secondary mb-3 w-full justify-center"
+          onClick={() => setShowTranscription(!showTranscription)}
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          <svg
+            width="14" height="14" viewBox="0 0 16 16" fill="currentColor"
+            style={{
+              transform: showTranscription ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
+          >
+            <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+          </svg>
+          transcription
+        </button>
+
+        {showTranscription && (
+          <div
+            className="animate-fade-in"
+            style={{
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-text-dimmed)',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              maxHeight: '300px',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Texte attendu avec surlignage */}
+            <div className="mb-4">
+              <div
+                className="mb-2"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.7rem',
+                  color: 'var(--color-text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                texte
+              </div>
+              <div style={{ lineHeight: '2', fontFamily: 'var(--font-mono)', fontSize: '1rem' }}>
+                {transcription.map((item, i) => (
+                  <span
+                    key={i}
+                    className="transcription-word"
+                    style={{
+                      display: 'inline-block',
+                      margin: '0 3px',
+                      padding: '1px 4px',
+                      borderRadius: '3px',
+                      color:
+                        item.status === 'correct' ? 'var(--color-correct)' :
+                        item.status === 'incorrect' ? 'var(--color-incorrect)' :
+                        'var(--color-text-muted)',
+                      background:
+                        item.status === 'incorrect' ? 'rgba(255, 64, 96, 0.1)' : 'transparent',
+                      textDecoration:
+                        item.status === 'incorrect' ? 'underline' : 'none',
+                      textDecorationColor: 'var(--color-incorrect)',
+                      textUnderlineOffset: '4px',
+                    }}
+                    title={
+                      item.status === 'incorrect' && item.spoken
+                        ? `Tu as dit : "${item.spoken}"`
+                        : item.status === 'pending'
+                        ? 'Non atteint'
+                        : undefined
+                    }
+                  >
+                    {item.expected}
+                    {/* Tooltip inline pour les erreurs */}
+                    {item.status === 'incorrect' && item.spoken && (
+                      <span
+                        style={{
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          color: 'var(--color-incorrect)',
+                          opacity: 0.7,
+                          lineHeight: '1',
+                          marginTop: '-2px',
+                        }}
+                      >
+                        → {item.spoken}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Actions */}
       <div className="flex justify-center gap-4">
         <button id="btn-restart" className="btn-primary" onClick={onRestart}>
@@ -87,6 +205,20 @@ export default function Results({ metrics, onRestart, onNewText }) {
         <button id="btn-new-text" className="btn-secondary" onClick={onNewText}>
           nouveau texte
         </button>
+      </div>
+
+      {/* Hint raccourcis */}
+      <div
+        className="text-center mt-6 desktop-only"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.7rem',
+          color: 'var(--color-text-muted)',
+        }}
+      >
+        <span className="kbd">tab</span> / <span className="kbd">enter</span> recommencer
+        {' • '}
+        <span className="kbd">esc</span> nouveau texte
       </div>
     </div>
   );
