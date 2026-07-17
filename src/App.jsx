@@ -157,13 +157,9 @@ export default function App() {
     
     // Convertir les statuts d'objets complets vers un simple tableau de strings 
     const newWordStatuses = statuses.map((s, i) => {
-      // Évite le clignotement rouge sur les mots en cours de prononciation (interim)
-      if (!isFinalChunk && s.status === WordStatus.INCORRECT) {
-        // Si c'est l'un des 2 derniers mots atteints, on le remet en PENDING
-        // pour ne pas afficher l'erreur prématurément ni dupliquer le curseur ACTIVE
-        if (i >= newIdx - 2) {
-          return WordStatus.PENDING;
-        }
+      // Évite le clignotement rouge uniquement sur le TOUT DERNIER mot en cours d'écoute
+      if (!isFinalChunk && s.status === WordStatus.INCORRECT && i === newIdx - 1) {
+        return WordStatus.PENDING;
       }
       return s.status;
     });

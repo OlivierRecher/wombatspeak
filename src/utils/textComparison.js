@@ -39,40 +39,40 @@ export function alignWords(expectedWords, spokenWords) {
     return { statuses, currentIndex: 0 };
   }
 
-  const SUB_COST = 0.99;
-  const DEL_COST = 0.4; // Permet de sauter jusqu'à 2 mots (2 * 0.4 = 0.8 < 0.99) pour se recaler
-  const INS_COST = 0.4; // Permet d'ignorer le bruit ou les bégaiements
+  const MATCH_SCORE = 1.0;
+  const SUB_PENALTY = -0.1;
+  const INS_PENALTY = -0.2;
+  const DEL_PENALTY = -0.2;
 
   const dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
 
   // Initialisation
-  for (let i = 0; i <= n; i++) dp[i][0] = i * DEL_COST;
-  for (let j = 0; j <= m; j++) dp[0][j] = j * INS_COST;
+  for (let i = 0; i <= n; i++) dp[i][0] = i * DEL_PENALTY;
+  for (let j = 0; j <= m; j++) dp[0][j] = j * INS_PENALTY;
 
-  // Remplissage de la matrice des coûts
+  // Remplissage de la matrice des scores
   for (let i = 1; i <= n; i++) {
     for (let j = 1; j <= m; j++) {
       const expected = normalizeWord(expectedWords[i - 1]);
       const spoken = normalizeWord(spokenWords[j - 1]);
       const score = similarity(expected, spoken);
       
-      const matchCost = score >= MATCH_THRESHOLD ? 0 : SUB_COST; 
+      const matchScore = score >= MATCH_THRESHOLD ? MATCH_SCORE : SUB_PENALTY; 
       
-      dp[i][j] = Math.min(
-        dp[i - 1][j - 1] + matchCost, // Match / Substitution
-        dp[i - 1][j] + DEL_COST,      // Deletion (mot attendu sauté)
-        dp[i][j - 1] + INS_COST       // Insertion (mot prononcé en trop)
+      dp[i][j] = Math.max(
+        dp[i - 1][j - 1] + matchScore, // Match / Substitution
+        dp[i - 1][j] + DEL_PENALTY,    // Deletion (mot attendu sauté)
+        dp[i][j - 1] + INS_PENALTY     // Insertion (mot prononcé en trop)
       );
     }
   }
 
   // On cherche la fin de l'alignement (free end gap pour expectedWords)
-  // L'utilisateur n'a probablement pas encore lu tout le texte
-  let minCost = Infinity;
+  let maxScore = -Infinity;
   let bestI = 0;
   for (let i = 0; i <= n; i++) {
-    if (dp[i][m] <= minCost) {
-      minCost = dp[i][m];
+    if (dp[i][m] >= maxScore) {
+      maxScore = dp[i][m];
       bestI = i;
     }
   }
@@ -87,13 +87,12 @@ export function alignWords(expectedWords, spokenWords) {
       const expected = normalizeWord(expectedWords[i - 1]);
       const spoken = normalizeWord(spokenWords[j - 1]);
       const score = similarity(expected, spoken);
-      const matchCost = score >= MATCH_THRESHOLD ? 0 : 0.99;
+      const matchScore = score >= MATCH_THRESHOLD ? MATCH_SCORE : SUB_PENALTY;
       
-      // En JS, on gère les imprécisions des flottants
-      if (Math.abs(dp[i][j] - (dp[i - 1][j - 1] + matchCost)) < 0.01) {
+      if (Math.abs(dp[i][j] - (dp[i - 1][j - 1] + matchScore)) < 0.01) {
         alignment.unshift({
           expectedIdx: i - 1,
-          status: matchCost === 0 ? WordStatus.CORRECT : WordStatus.INCORRECT,
+          status: matchScore === MATCH_SCORE ? WordStatus.CORRECT : WordStatus.INCORRECT,
           spoken: spokenWords[j - 1]
         });
         i--;
@@ -101,7 +100,7 @@ export function alignWords(expectedWords, spokenWords) {
         continue;
       }
     }
-    if (i > 0 && Math.abs(dp[i][j] - (dp[i - 1][j] + 0.4)) < 0.01) {
+    if (i > 0 && Math.abs(dp[i][j] - (dp[i - 1][j] + DEL_PENALTY)) < 0.01) {
       alignment.unshift({
         expectedIdx: i - 1,
         status: WordStatus.INCORRECT,
@@ -110,13 +109,10 @@ export function alignWords(expectedWords, spokenWords) {
       i--;
       continue;
     }
-    if (j > 0 && Math.abs(dp[i][j] - (dp[i][j - 1] + 0.4)) < 0.01) {
-      // Le mot prononcé était une insertion (bruit, bégaiement)
-      // On l'ignore dans l'affichage principal
+    if (j > 0 && Math.abs(dp[i][j] - (dp[i][j - 1] + INS_PENALTY)) < 0.01) {
       j--;
       continue;
     }
-    // Fallback de sécurité (ne devrait jamais arriver)
     break;
   }
 

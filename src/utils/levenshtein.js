@@ -41,11 +41,15 @@ export function levenshteinDistance(a, b) {
 export function similarity(expected, spoken) {
   const maxLen = Math.max(expected.length, spoken.length);
   if (maxLen === 0) return 1;
-  return 1 - levenshteinDistance(expected, spoken) / maxLen;
+  const dist = levenshteinDistance(expected, spoken);
+  if (maxLen <= 3) {
+    return dist === 0 ? 1 : 0; // Exige une prononciation parfaite pour les petits mots
+  }
+  return 1 - dist / maxLen;
 }
 
 /**
  * Seuil de similarité pour considérer un mot comme correct.
  * Un score >= MATCH_THRESHOLD est accepté.
  */
-export const MATCH_THRESHOLD = 0.65;
+export const MATCH_THRESHOLD = 0.75;
