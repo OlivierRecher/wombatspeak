@@ -203,9 +203,20 @@ export default function App() {
     interimResults: true,
     onResult: handleSpeechResult,
     onInterimUpdate: handleInterimUpdate,
-    onEnd: () => {},
+    onEnd: () => {
+      // Si l'application pense qu'elle tourne encore mais que la reco s'est arrêtée
+      if (appStateRef.current === AppState.RUNNING || appStateRef.current === AppState.READY) {
+        setAppState(AppState.IDLE);
+        stopAnalyzer();
+      }
+    },
     onError: (error) => {
       console.warn('Speech error:', error);
+      if (error === 'not-allowed') {
+        setMicError(true);
+        setAppState(AppState.IDLE);
+        stopAnalyzer();
+      }
     },
   });
 
@@ -213,7 +224,7 @@ export default function App() {
   stopListeningRef.current = stopListening;
 
   // --- Démarrage de l'exercice (appel micro, attente voix) ---
-  const startExercise = useCallback(async () => {
+  const startExercise = useCallback(() => {
     // Reset état
     const textWords = wordsRef.current;
     setWordStatuses(textWords.map(() => WordStatus.PENDING));
@@ -227,14 +238,17 @@ export default function App() {
     setAppState(AppState.READY);
     setMicError(false);
 
-    // Démarre l'analyse audio et la reconnaissance vocale
-    const analyzerStarted = await startAnalyzer();
-    if (!analyzerStarted) {
-      setAppState(AppState.IDLE);
-      setMicError(true);
-      return;
-    }
+    // Démarre la reconnaissance vocale de manière synchrone (vital pour iOS/mobile)
     startListening();
+
+    // Démarre l'analyse audio de manière asynchrone
+    startAnalyzer().then((analyzerStarted) => {
+      if (!analyzerStarted) {
+        setAppState(AppState.IDLE);
+        setMicError(true);
+        stopListeningRef.current();
+      }
+    });
   }, [startAnalyzer, startListening]);
 
   // --- Arrêt de l'exercice ---
@@ -244,7 +258,7 @@ export default function App() {
   }, [stopListening, finishExercise]);
 
   // --- Restart avec le même texte (directement en mode écoute, pas besoin de recliquer) ---
-  const handleRestart = useCallback(async () => {
+  const handleRestart = useCallback(() => {
     stopListening();
     stopAnalyzer();
 
@@ -261,13 +275,16 @@ export default function App() {
     setAppState(AppState.READY);
     setMicError(false);
 
-    const analyzerStarted = await startAnalyzer();
-    if (!analyzerStarted) {
-      setAppState(AppState.IDLE);
-      setMicError(true);
-      return;
-    }
+    // Démarre la reconnaissance vocale de manière synchrone
     startListening();
+
+    startAnalyzer().then((analyzerStarted) => {
+      if (!analyzerStarted) {
+        setAppState(AppState.IDLE);
+        setMicError(true);
+        stopListeningRef.current();
+      }
+    });
   }, [stopListening, stopAnalyzer, startAnalyzer, startListening]);
 
   // --- Nouveau texte ---

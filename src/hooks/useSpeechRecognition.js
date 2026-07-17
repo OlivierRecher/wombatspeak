@@ -129,14 +129,19 @@ export function useSpeechRecognition({
         // Accumulate this session's finals before restarting
         accumulatedFinalRef.current += (recognition._sessionFinals || '');
         recognition._sessionFinals = '';
-        try {
-          recognition.start();
-        } catch (e) {
-          console.warn('Failed to restart recognition:', e);
-          setIsListening(false);
-          shouldRestartRef.current = false;
-          onEnd?.();
-        }
+        
+        // Add a small delay for mobile browsers (helps with iOS Safari gesture requirements)
+        setTimeout(() => {
+          if (!shouldRestartRef.current || recognitionRef.current !== recognition) return;
+          try {
+            recognition.start();
+          } catch (e) {
+            console.warn('Failed to restart recognition:', e);
+            setIsListening(false);
+            shouldRestartRef.current = false;
+            onEnd?.();
+          }
+        }, 50);
 
       } else {
         setIsListening(false);
