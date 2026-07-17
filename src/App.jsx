@@ -39,6 +39,7 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [metrics, setMetrics] = useState(null);
   const [silenceWarning, setSilenceWarning] = useState(false);
+  const [micError, setMicError] = useState(false);
   // Stocke les mots prononcés pour la transcription finale
   const [spokenWordsLog, setSpokenWordsLog] = useState([]);
 
@@ -74,7 +75,7 @@ export default function App() {
     setCurrentText(selected);
     // On remplace les tirets par des espaces pour que "au-dessus" devienne deux mots distincts
     // Cela rend la reconnaissance vocale beaucoup plus tolérante
-    const textWords = selected.words.replace(/-/g, ' ').split(/\s+/);
+    const textWords = selected.words.replace(/-/g, ' ').split(/\s+/).filter(w => w.length > 0);
     setWords(textWords);
     setWordStatuses(textWords.map(() => WordStatus.PENDING));
     setCurrentIndex(0);
@@ -129,6 +130,11 @@ export default function App() {
 
   // --- Callback de mise à jour globale (interim + final) ---
   const updateAlignment = useCallback((allText, isFinalChunk = false) => {
+    // Éviter de traiter les résultats fantômes ou tardifs
+    if (appStateRef.current !== AppState.READY && appStateRef.current !== AppState.RUNNING) {
+      return;
+    }
+
     // Tolérance : on sépare les mots liés par des tirets
     const allWords = allText
       .replace(/-/g, ' ')
@@ -223,9 +229,15 @@ export default function App() {
 
     // Passe en mode READY (micro actif, en attente de voix)
     setAppState(AppState.READY);
+    setMicError(false);
 
     // Démarre l'analyse audio et la reconnaissance vocale
-    await startAnalyzer();
+    const analyzerStarted = await startAnalyzer();
+    if (!analyzerStarted) {
+      setAppState(AppState.IDLE);
+      setMicError(true);
+      return;
+    }
     startListening();
   }, [startAnalyzer, startListening]);
 
@@ -251,8 +263,14 @@ export default function App() {
 
     // Passe directement en READY → attend la voix
     setAppState(AppState.READY);
+    setMicError(false);
 
-    await startAnalyzer();
+    const analyzerStarted = await startAnalyzer();
+    if (!analyzerStarted) {
+      setAppState(AppState.IDLE);
+      setMicError(true);
+      return;
+    }
     startListening();
   }, [stopListening, stopAnalyzer, startAnalyzer, startListening]);
 
@@ -263,6 +281,7 @@ export default function App() {
     setMetrics(null);
     setSpokenWordsLog([]);
     selectRandomText();
+    setMicError(false);
     setAppState(AppState.IDLE);
   }, [stopListening, stopAnalyzer, selectRandomText]);
 
@@ -290,6 +309,7 @@ export default function App() {
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
 
       if (state === AppState.IDLE) {
+        if (!isSupported) return;
         // N'importe quelle touche pour commencer
         if (e.key === 'Tab') {
            e.preventDefault();
@@ -331,7 +351,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [startExercise, handleRestart, handleNewText, stopExercise]);
+  }, [startExercise, handleRestart, handleNewText, stopExercise, isSupported]);
 
   // --- Rendu ---
   const isActive = appState === AppState.RUNNING || appState === AppState.READY;
@@ -357,14 +377,23 @@ export default function App() {
           cursor: appState === AppState.IDLE ? 'pointer' : 'default' 
         }}
         onClick={() => {
-          if (appState === AppState.IDLE) {
+          if (appState === AppState.IDLE && isSupported) {
             startExercise();
           }
         }}
       >
 
+        {/* Avertissement de non-support ou erreur micro */}
+        {(!isSupported || micError) && (
+          <div className="w-full text-center py-4 px-6 mb-8 rounded-lg animate-fade-in" style={{ background: 'rgba(255, 50, 50, 0.1)', color: 'var(--color-incorrect)', border: '1px solid rgba(255, 50, 50, 0.3)' }}>
+            {!isSupported 
+              ? "⚠️ Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Chrome, Edge ou Safari."
+              : "⚠️ Impossible d'accéder au microphone. Veuillez vérifier les autorisations de votre navigateur."}
+          </div>
+        )}
+
         {/* Zone de texte */}
-        {appState !== AppState.DONE && (
+        {isSupported && !micError && appState !== AppState.DONE && (
           <div className="w-full mb-8 relative">
             
             {/* Titre / Info au dessus du texte (discret) */}

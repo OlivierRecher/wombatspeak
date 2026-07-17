@@ -30,6 +30,10 @@ export function useAudioAnalyzer({
   // Démarre la capture et l'analyse audio
   const startAnalyzer = useCallback(async () => {
     try {
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {});
+      }
+
       const currentId = ++analyzerIdRef.current;
       isActiveRef.current = true;
 
@@ -92,8 +96,10 @@ export function useAudioAnalyzer({
       };
 
       analyze();
+      return true;
     } catch (err) {
       console.error('Failed to start audio analyzer:', err);
+      return false;
     }
   }, [silenceThreshold, silenceDurationMs, onSilenceDetected]);
 

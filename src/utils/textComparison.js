@@ -14,6 +14,7 @@ export const WordStatus = {
  * Normalise un mot pour la comparaison (minuscules, suppression ponctuation, accents simplifiés)
  */
 export function normalizeWord(word) {
+  if (!word || typeof word !== 'string') return '';
   return word
     .toLowerCase()
     .normalize('NFD')
@@ -38,11 +39,15 @@ export function alignWords(expectedWords, spokenWords) {
     return { statuses, currentIndex: 0 };
   }
 
+  const SUB_COST = 0.99;
+  const DEL_COST = 0.4; // Permet de sauter jusqu'à 2 mots (2 * 0.4 = 0.8 < 0.99) pour se recaler
+  const INS_COST = 0.4; // Permet d'ignorer le bruit ou les bégaiements
+
   const dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
 
   // Initialisation
-  for (let i = 0; i <= n; i++) dp[i][0] = i;
-  for (let j = 0; j <= m; j++) dp[0][j] = j;
+  for (let i = 0; i <= n; i++) dp[i][0] = i * DEL_COST;
+  for (let j = 0; j <= m; j++) dp[0][j] = j * INS_COST;
 
   // Remplissage de la matrice des coûts
   for (let i = 1; i <= n; i++) {
@@ -51,17 +56,12 @@ export function alignWords(expectedWords, spokenWords) {
       const spoken = normalizeWord(spokenWords[j - 1]);
       const score = similarity(expected, spoken);
       
-      // On met une pénalité légèrement inférieure à 1.0 (ex: 0.99) pour la substitution.
-      // Pourquoi ? Car une insertion coûte 1.0. À la fin du texte, laisser le dernier mot "pending" est gratuit.
-      // Si la substitution coûte 1.5, l'algo préfère considérer un dernier mot mal prononcé comme une insertion (+1.0)
-      // et laisse le dernier mot attendu en "pending", ce qui empêche le chrono de s'arrêter.
-      // Avec 0.99, l'algo préfère substituer (0.99) plutôt qu'insérer (1.0), et le texte se termine !
-      const matchCost = score >= MATCH_THRESHOLD ? 0 : 0.99; 
+      const matchCost = score >= MATCH_THRESHOLD ? 0 : SUB_COST; 
       
       dp[i][j] = Math.min(
         dp[i - 1][j - 1] + matchCost, // Match / Substitution
-        dp[i - 1][j] + 1,             // Deletion (mot attendu sauté)
-        dp[i][j - 1] + 1              // Insertion (mot prononcé en trop)
+        dp[i - 1][j] + DEL_COST,      // Deletion (mot attendu sauté)
+        dp[i][j - 1] + INS_COST       // Insertion (mot prononcé en trop)
       );
     }
   }
@@ -101,7 +101,7 @@ export function alignWords(expectedWords, spokenWords) {
         continue;
       }
     }
-    if (i > 0 && Math.abs(dp[i][j] - (dp[i - 1][j] + 1)) < 0.01) {
+    if (i > 0 && Math.abs(dp[i][j] - (dp[i - 1][j] + 0.4)) < 0.01) {
       alignment.unshift({
         expectedIdx: i - 1,
         status: WordStatus.INCORRECT,
@@ -110,7 +110,7 @@ export function alignWords(expectedWords, spokenWords) {
       i--;
       continue;
     }
-    if (j > 0 && Math.abs(dp[i][j] - (dp[i][j - 1] + 1)) < 0.01) {
+    if (j > 0 && Math.abs(dp[i][j] - (dp[i][j - 1] + 0.4)) < 0.01) {
       // Le mot prononcé était une insertion (bruit, bégaiement)
       // On l'ignore dans l'affichage principal
       j--;
