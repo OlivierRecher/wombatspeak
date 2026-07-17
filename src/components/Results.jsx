@@ -6,8 +6,9 @@ import { similarity, MATCH_THRESHOLD } from '../utils/levenshtein';
  * Écran de résultats affiché à la fin d'un exercice.
  * Montre les métriques (WPM, précision) + transcription comparée.
  */
-export default function Results({ metrics, words, wordStatuses, spokenWords, onRestart, onNewText }) {
+export default function Results({ metrics, words, wordStatuses, spokenWords, onRestart, onNewText, language }) {
   const [showTranscription, setShowTranscription] = useState(true);
+  const isEn = language === 'en';
 
   if (!metrics) return null;
 
@@ -22,11 +23,11 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
 
   // Message d'encouragement basé sur la performance
   const getMessage = () => {
-    if (accuracy >= 95 && wpm >= 120) return '🔥 Incroyable !';
-    if (accuracy >= 90) return '✨ Excellente diction !';
-    if (accuracy >= 75) return '👍 Bien joué !';
-    if (accuracy >= 60) return '💪 Continue comme ça !';
-    return '🎯 Entraîne-toi encore !';
+    if (accuracy >= 95 && wpm >= 120) return isEn ? '🔥 Incredible!' : '🔥 Incroyable !';
+    if (accuracy >= 90) return isEn ? '✨ Excellent diction!' : '✨ Excellente diction !';
+    if (accuracy >= 75) return isEn ? '👍 Well done!' : '👍 Bien joué !';
+    if (accuracy >= 60) return isEn ? '💪 Keep it up!' : '💪 Continue comme ça !';
+    return isEn ? '🎯 Keep practicing!' : '🎯 Entraîne-toi encore !';
   };
 
   // Construit la comparaison mot par mot avec ce qui a été dit
@@ -63,13 +64,13 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="stat-card">
           <div className="stat-card__value">{wpm}</div>
-          <div className="stat-card__label">mots / minute</div>
+          <div className="stat-card__label">{isEn ? 'words / min' : 'mots / minute'}</div>
         </div>
         <div className="stat-card">
           <div className="stat-card__value" style={{ color: getAccuracyColor() }}>
             {accuracy}%
           </div>
-          <div className="stat-card__label">précision</div>
+          <div className="stat-card__label">{isEn ? 'accuracy' : 'précision'}</div>
         </div>
       </div>
 
@@ -79,13 +80,13 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
           <div className="stat-card__value" style={{ fontSize: '1.5rem', color: 'var(--color-cyan)' }}>
             {correct}
           </div>
-          <div className="stat-card__label">corrects</div>
+          <div className="stat-card__label">{isEn ? 'correct' : 'corrects'}</div>
         </div>
         <div className="stat-card">
           <div className="stat-card__value" style={{ fontSize: '1.5rem', color: 'var(--color-incorrect)' }}>
             {incorrect}
           </div>
-          <div className="stat-card__label">erreurs</div>
+          <div className="stat-card__label">{isEn ? 'errors' : 'erreurs'}</div>
         </div>
         <div className="stat-card">
           <div className="stat-card__value" style={{ fontSize: '1.5rem', color: 'var(--color-text-secondary)' }}>
@@ -138,7 +139,7 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
                   letterSpacing: '0.1em',
                 }}
               >
-                texte
+                {isEn ? 'text' : 'texte'}
               </div>
               <div style={{ lineHeight: '2', fontFamily: 'var(--font-mono)', fontSize: '1rem' }}>
                 {transcription.map((item, i) => (
@@ -163,9 +164,9 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
                     }}
                     title={
                       item.status === 'incorrect' && item.spoken
-                        ? `Tu as dit : "${item.spoken}"`
+                        ? (isEn ? `You said: "${item.spoken}"` : `Tu as dit : "${item.spoken}"`)
                         : item.status === 'pending'
-                        ? 'Non atteint'
+                        ? (isEn ? 'Not reached' : 'Non atteint')
                         : undefined
                     }
                   >
@@ -200,10 +201,10 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
             <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z" />
             <path fillRule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z" />
           </svg>
-          recommencer
+          {isEn ? 'restart' : 'recommencer'}
         </button>
         <button id="btn-new-text" className="btn-secondary" onClick={onNewText}>
-          nouveau texte
+          {isEn ? 'new text' : 'nouveau texte'}
         </button>
       </div>
 
@@ -216,9 +217,9 @@ export default function Results({ metrics, words, wordStatuses, spokenWords, onR
           color: 'var(--color-text-muted)',
         }}
       >
-        <span className="kbd">tab</span> / <span className="kbd">enter</span> recommencer
+        <span className="kbd">enter</span> {isEn ? 'restart' : 'recommencer'}
         {' • '}
-        <span className="kbd">esc</span> nouveau texte
+        <span className="kbd">tab</span> / <span className="kbd">esc</span> {isEn ? 'new text' : 'nouveau texte'}
       </div>
     </div>
   );

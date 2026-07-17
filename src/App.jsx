@@ -383,8 +383,8 @@ export default function App() {
         {(!isSupported || micError) && (
           <div className="w-full text-center py-4 px-6 mb-8 rounded-lg animate-fade-in" style={{ background: 'rgba(255, 50, 50, 0.1)', color: 'var(--color-incorrect)', border: '1px solid rgba(255, 50, 50, 0.3)' }}>
             {!isSupported 
-              ? "⚠️ Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Chrome, Edge ou Safari."
-              : "⚠️ Impossible d'accéder au microphone. Veuillez vérifier les autorisations de votre navigateur."}
+              ? (language === 'en' ? "⚠️ Your browser does not support speech recognition. Please use Chrome, Edge, or Safari." : "⚠️ Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Chrome, Edge ou Safari.")
+              : (language === 'en' ? "⚠️ Unable to access the microphone. Please check your browser permissions." : "⚠️ Impossible d'accéder au microphone. Veuillez vérifier les autorisations de votre navigateur.")}
           </div>
         )}
 
@@ -398,7 +398,7 @@ export default function App() {
                 className="absolute -top-8 left-0 right-0 text-center animate-fade-in"
                 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}
               >
-                {currentText.title} • {currentText.difficulty}
+                {currentText.title} • {currentText.difficulty === 'fourche-langue' && language === 'en' ? 'tongue-twister' : currentText.difficulty}
               </div>
             )}
 
@@ -476,7 +476,7 @@ export default function App() {
               fontSize: '0.85rem',
             }}
           >
-            🎤 Silence détecté — continue à parler !
+            {language === 'en' ? '🎤 Silence detected — keep speaking!' : '🎤 Silence détecté — continue à parler !'}
           </div>
         )}
 
@@ -489,6 +489,7 @@ export default function App() {
             spokenWords={spokenWordsLog}
             onRestart={handleRestart}
             onNewText={handleNewText}
+            language={language}
           />
         )}
       </main>
@@ -507,15 +508,27 @@ export default function App() {
         {' '}— open source voice training •{' '}
         <span style={{ color: 'var(--color-text-muted)' }}>
           {appState === AppState.DONE ? (
-            <>
-              <span className="kbd">tab</span> / <span className="kbd">enter</span> recommencer • <span className="kbd">esc</span> nouveau texte
-            </>
+            language === 'en' ? (
+              <>
+                <span className="kbd">enter</span> restart • <span className="kbd">tab</span> / <span className="kbd">esc</span> new text
+              </>
+            ) : (
+              <>
+                <span className="kbd">enter</span> recommencer • <span className="kbd">tab</span> / <span className="kbd">esc</span> nouveau texte
+              </>
+            )
           ) : appState === AppState.IDLE ? (
-            <>any key to start</>
+            language === 'en' ? <>press any key to start</> : <>appuie sur une touche pour commencer</>
           ) : (
-            <>
-              <span className="kbd">tab</span> next • <span className="kbd">enter</span> restart • <span className="kbd">esc</span> stop
-            </>
+            language === 'en' ? (
+              <>
+                <span className="kbd">tab</span> next • <span className="kbd">enter</span> restart • <span className="kbd">esc</span> stop
+              </>
+            ) : (
+              <>
+                <span className="kbd">tab</span> suivant • <span className="kbd">enter</span> recommencer • <span className="kbd">esc</span> stop
+              </>
+            )
           )}
         </span>
       </footer>

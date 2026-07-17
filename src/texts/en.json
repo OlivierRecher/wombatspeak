@@ -4,63 +4,243 @@
   "texts": [
     {
       "id": 1,
-      "title": "The brown fox",
+      "title": "The small cat",
       "difficulty": "easy",
-      "words": "the quick brown fox jumps over the lazy dog that was sleeping peacefully in the sunny garden"
+      "words": "the small cat sleeps peacefully on the soft sofa in the living room"
     },
     {
       "id": 2,
+      "title": "Sweet apples",
+      "difficulty": "easy",
+      "words": "i like eating sweet red apples in the morning"
+    },
+    {
+      "id": 3,
+      "title": "The slow car",
+      "difficulty": "easy",
+      "words": "the car moves slowly on the road"
+    },
+    {
+      "id": 4,
+      "title": "Beautiful day",
+      "difficulty": "easy",
+      "words": "it is very beautiful today in the city"
+    },
+    {
+      "id": 5,
+      "title": "Television",
+      "difficulty": "easy",
+      "words": "i am watching an interesting movie on television"
+    },
+    {
+      "id": 6,
+      "title": "The market",
+      "difficulty": "easy",
+      "words": "we are going to the market to buy some fresh vegetables"
+    },
+    {
+      "id": 7,
+      "title": "Reading",
+      "difficulty": "easy",
+      "words": "she reads a fascinating book in the quiet garden"
+    },
+    {
+      "id": 8,
+      "title": "The dog",
+      "difficulty": "easy",
+      "words": "the dog runs fast after the red ball"
+    },
+    {
+      "id": 9,
+      "title": "Playground",
+      "difficulty": "easy",
+      "words": "children play happily in the school playground"
+    },
+    {
+      "id": 10,
+      "title": "The wind",
+      "difficulty": "easy",
+      "words": "the wind blows gently through the green trees"
+    },
+    {
+      "id": 11,
       "title": "Technology",
       "difficulty": "medium",
       "words": "modern technology transforms our daily lives with remarkable innovations that facilitate communication between people around the entire world"
     },
     {
-      "id": 3,
-      "title": "The journey",
-      "difficulty": "easy",
-      "words": "we traveled through the snowy mountains and green valleys to discover magnificent landscapes and picturesque villages along the way"
-    },
-    {
-      "id": 4,
+      "id": 12,
       "title": "Cooking",
       "difficulty": "medium",
       "words": "culinary traditions from around the world showcase incredible diversity of flavors techniques and ingredients that bring people together at the table"
     },
     {
-      "id": 5,
-      "title": "Artificial intelligence",
-      "difficulty": "hard",
-      "words": "machine learning algorithms enable computer systems to analyze considerable amounts of data to identify complex and predictive patterns automatically"
-    },
-    {
-      "id": 6,
-      "title": "Nature",
-      "difficulty": "easy",
-      "words": "birds sing in the trees while the sun rises gently above the calm and peaceful forest in the early morning"
-    },
-    {
-      "id": 7,
+      "id": 13,
       "title": "Sports",
       "difficulty": "medium",
       "words": "regular practice of physical activity contributes to maintaining good cardiovascular health and strengthens the immune system over time"
     },
     {
-      "id": 8,
+      "id": 14,
+      "title": "Photography",
+      "difficulty": "medium",
+      "words": "photography allows us to capture precious moments and keep them forever in our memories visually"
+    },
+    {
+      "id": 15,
+      "title": "Architecture",
+      "difficulty": "medium",
+      "words": "contemporary urban architecture cleverly mixes glass and steel to create bright and highly functional living spaces"
+    },
+    {
+      "id": 16,
+      "title": "Learning",
+      "difficulty": "medium",
+      "words": "learning a new foreign language requires a lot of time patience and very regular and diligent practice"
+    },
+    {
+      "id": 17,
+      "title": "Cinema",
+      "difficulty": "medium",
+      "words": "cinema has completely revolutionized our way of telling visual stories and sharing intense and collective emotions"
+    },
+    {
+      "id": 18,
+      "title": "History",
+      "difficulty": "medium",
+      "words": "the study of ancient history allows us to better understand the origins of our civilizations and past mistakes"
+    },
+    {
+      "id": 19,
+      "title": "Oceans",
+      "difficulty": "medium",
+      "words": "the oceans cover most of our blue planet and harbor incredible biodiversity that still remains largely unknown"
+    },
+    {
+      "id": 20,
+      "title": "Gardening",
+      "difficulty": "medium",
+      "words": "cultivating a vegetable garden requires attention and care but offers the immense satisfaction of harvesting fresh vegetables"
+    },
+    {
+      "id": 21,
+      "title": "Artificial intelligence",
+      "difficulty": "hard",
+      "words": "machine learning algorithms enable computer systems to analyze considerable amounts of data to identify complex and predictive patterns automatically"
+    },
+    {
+      "id": 22,
       "title": "Space exploration",
       "difficulty": "hard",
       "words": "space exploration represents one of the greatest scientific and technological challenges that humanity has faced for several decades now"
     },
     {
-      "id": 9,
-      "title": "Music",
-      "difficulty": "easy",
-      "words": "music soothes the soul and brings people together around universal melodies that touch the heart and inspire creativity"
-    },
-    {
-      "id": 10,
+      "id": 23,
       "title": "Sustainability",
       "difficulty": "hard",
       "words": "ecological transition requires a profound transformation of our economic models and consumption habits to preserve natural resources for future generations"
+    },
+    {
+      "id": 24,
+      "title": "Quantum mechanics",
+      "difficulty": "hard",
+      "words": "quantum mechanics is a branch of theoretical physics that studies fundamental phenomena at the subatomic scale with highly counterintuitive mathematical concepts"
+    },
+    {
+      "id": 25,
+      "title": "The abysses",
+      "difficulty": "hard",
+      "words": "the underwater exploration of ocean abysses reveals the existence of complex ecosystems capable of surviving in absolute pressure and total darkness"
+    },
+    {
+      "id": 26,
+      "title": "Neuroscience",
+      "difficulty": "hard",
+      "words": "cognitive neuroscience tirelessly seeks to decipher and understand the complex brain mechanisms that orchestrate our thoughts and our multiple social behaviors"
+    },
+    {
+      "id": 27,
+      "title": "General relativity",
+      "difficulty": "hard",
+      "words": "the theory of relativity fundamentally changed our understanding of the universe by describing gravitation as a continuous curvature of spacetime generated by mass"
+    },
+    {
+      "id": 28,
+      "title": "Philosophy",
+      "difficulty": "hard",
+      "words": "the philosophical movement of the enlightenment deeply influenced modern western societies by promoting humanist values of freedom tolerance and scientific progress"
+    },
+    {
+      "id": 29,
+      "title": "Molecular genetics",
+      "difficulty": "hard",
+      "words": "in depth study of molecular genetics and dna structures now allows us to envision innovative gene therapies to treat certain very rare chronic diseases"
+    },
+    {
+      "id": 30,
+      "title": "Cryptocurrency",
+      "difficulty": "hard",
+      "words": "the underlying blockchain technology theoretically guarantees perfectly secure decentralized and transparent digital transactions without requiring any financial intermediary"
+    },
+    {
+      "id": 31,
+      "title": "Seashells",
+      "difficulty": "fourche-langue",
+      "words": "she sells seashells by the seashore and the shells she sells are seashells i am sure"
+    },
+    {
+      "id": 32,
+      "title": "Woodchuck",
+      "difficulty": "fourche-langue",
+      "words": "how much wood would a woodchuck chuck if a woodchuck could chuck wood"
+    },
+    {
+      "id": 33,
+      "title": "Peter Piper",
+      "difficulty": "fourche-langue",
+      "words": "peter piper picked a peck of pickled peppers a peck of pickled peppers peter piper picked"
+    },
+    {
+      "id": 34,
+      "title": "Fuzzy Wuzzy",
+      "difficulty": "fourche-langue",
+      "words": "fuzzy wuzzy was a bear fuzzy wuzzy had no hair fuzzy wuzzy wasn't very fuzzy was he"
+    },
+    {
+      "id": 35,
+      "title": "Betty Botter",
+      "difficulty": "fourche-langue",
+      "words": "betty botter bought some butter but she said the butter is bitter if i put it in my batter it will make my batter bitter"
+    },
+    {
+      "id": 36,
+      "title": "Black bug",
+      "difficulty": "fourche-langue",
+      "words": "a big black bug bit a big black dog on his big black nose"
+    },
+    {
+      "id": 37,
+      "title": "Can a can",
+      "difficulty": "fourche-langue",
+      "words": "can you can a can as a canner can can a can"
+    },
+    {
+      "id": 38,
+      "title": "Clam cram",
+      "difficulty": "fourche-langue",
+      "words": "how can a clam cram in a clean cream can"
+    },
+    {
+      "id": 39,
+      "title": "Susie",
+      "difficulty": "fourche-langue",
+      "words": "i saw susie sitting in a shoeshine shop where she sits she shines and where she shines she sits"
+    },
+    {
+      "id": 40,
+      "title": "Red lorry",
+      "difficulty": "fourche-langue",
+      "words": "red lorry yellow lorry red lorry yellow lorry red lorry yellow lorry"
     }
   ]
 }

@@ -56,7 +56,9 @@ export default function Header({
 
         {/* Difficulte */}
         <div className="flex items-center px-3 gap-2 sm:gap-3 min-h-[36px]">
-          {['easy', 'medium', 'hard', 'all'].map(diff => (
+          {['easy', 'medium', 'hard', 'fourche-langue', 'all'].map(diff => {
+            const displayDiff = diff === 'fourche-langue' && language === 'en' ? 'tongue-twister' : diff;
+            return (
             <button
               key={diff}
               onClick={() => onDifficultyChange(diff)}
@@ -69,9 +71,9 @@ export default function Header({
                 cursor: 'pointer'
               }}
             >
-              {diff}
+              {displayDiff}
             </button>
-          ))}
+          )})}
         </div>
       </div>
     </header>

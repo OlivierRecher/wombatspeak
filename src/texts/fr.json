@@ -10,57 +10,237 @@
     },
     {
       "id": 2,
+      "title": "Le petit chat",
+      "difficulty": "easy",
+      "words": "le petit chat dort paisiblement sur le canapé doux et confortable du grand salon"
+    },
+    {
+      "id": 3,
+      "title": "La promenade",
+      "difficulty": "easy",
+      "words": "nous avons décidé de faire une longue promenade en forêt pour profiter de l'air pur"
+    },
+    {
+      "id": 4,
+      "title": "Le marché",
+      "difficulty": "easy",
+      "words": "le marché du dimanche matin regorge de fruits frais et de légumes colorés"
+    },
+    {
+      "id": 5,
+      "title": "Les amis",
+      "difficulty": "easy",
+      "words": "passer du temps avec de bons amis est toujours un grand moment de joie et de partage"
+    },
+    {
+      "id": 6,
+      "title": "La lecture",
+      "difficulty": "easy",
+      "words": "lire un bon livre avant de s'endormir aide à se détendre après une longue journée de travail"
+    },
+    {
+      "id": 7,
+      "title": "Les vacances",
+      "difficulty": "easy",
+      "words": "j'ai hâte de partir en vacances pour nager dans la mer et bronzer sur la plage"
+    },
+    {
+      "id": 8,
+      "title": "Le vélo",
+      "difficulty": "easy",
+      "words": "faire du vélo dans la campagne est une excellente façon de faire du sport en plein air"
+    },
+    {
+      "id": 9,
+      "title": "La pluie",
+      "difficulty": "easy",
+      "words": "la pluie tombe doucement sur les carreaux de la fenêtre pendant que je bois mon thé"
+    },
+    {
+      "id": 10,
+      "title": "Le petit déjeuner",
+      "difficulty": "easy",
+      "words": "mon petit déjeuner préféré se compose de tartines de pain grillé avec de la confiture"
+    },
+    {
+      "id": 11,
       "title": "La technologie",
       "difficulty": "medium",
       "words": "la technologie moderne transforme notre quotidien avec des innovations remarquables qui facilitent la communication entre les personnes du monde entier"
     },
     {
-      "id": 3,
-      "title": "Le voyage",
-      "difficulty": "easy",
-      "words": "nous avons voyagé à travers les montagnes enneigées et les vallées verdoyantes pour découvrir des paysages magnifiques et des villages pittoresques"
-    },
-    {
-      "id": 4,
+      "id": 12,
       "title": "La cuisine française",
       "difficulty": "medium",
       "words": "la gastronomie française est reconnue dans le monde entier pour sa diversité ses saveurs raffinées et ses techniques de préparation minutieuses"
     },
     {
-      "id": 5,
-      "title": "L'intelligence artificielle",
-      "difficulty": "hard",
-      "words": "les algorithmes d'apprentissage automatique permettent aux systèmes informatiques d'analyser des quantités considérables de données pour identifier des modèles complexes et prédictifs"
-    },
-    {
-      "id": 6,
-      "title": "La nature",
-      "difficulty": "easy",
-      "words": "les oiseaux chantent dans les arbres pendant que le soleil se lève doucement au dessus de la forêt calme et paisible"
-    },
-    {
-      "id": 7,
+      "id": 13,
       "title": "Le sport",
       "difficulty": "medium",
       "words": "la pratique régulière d'une activité physique contribue au maintien d'une bonne santé cardiovasculaire et renforce le système immunitaire"
     },
     {
-      "id": 8,
+      "id": 14,
+      "title": "La photographie",
+      "difficulty": "medium",
+      "words": "la photographie permet de capturer des instants précieux et de les conserver pour toujours dans nos mémoires de manière visuelle"
+    },
+    {
+      "id": 15,
+      "title": "L'architecture",
+      "difficulty": "medium",
+      "words": "l'architecture urbaine contemporaine mêle habilement le verre et l'acier pour créer des espaces de vie lumineux et fonctionnels"
+    },
+    {
+      "id": 16,
+      "title": "L'apprentissage",
+      "difficulty": "medium",
+      "words": "apprendre une nouvelle langue étrangère demande beaucoup de temps de patience et d'une pratique très régulière et assidue"
+    },
+    {
+      "id": 17,
+      "title": "Le cinéma",
+      "difficulty": "medium",
+      "words": "le cinéma a complètement révolutionné notre façon de raconter des histoires visuelles et de partager des émotions intenses et collectives"
+    },
+    {
+      "id": 18,
+      "title": "L'histoire",
+      "difficulty": "medium",
+      "words": "l'étude de l'histoire antique nous permet de mieux comprendre les origines de nos civilisations et les erreurs commises par le passé"
+    },
+    {
+      "id": 19,
+      "title": "Les océans",
+      "difficulty": "medium",
+      "words": "les océans recouvrent la majeure partie de notre planète bleue et abritent une biodiversité incroyable qui reste encore largement méconnue"
+    },
+    {
+      "id": 20,
+      "title": "Le jardinage",
+      "difficulty": "medium",
+      "words": "cultiver un potager exige de l'attention et des soins mais offre la satisfaction immense de récolter ses propres légumes frais"
+    },
+    {
+      "id": 21,
+      "title": "L'intelligence artificielle",
+      "difficulty": "hard",
+      "words": "les algorithmes d'apprentissage automatique permettent aux systèmes informatiques d'analyser des quantités considérables de données pour identifier des modèles complexes et prédictifs"
+    },
+    {
+      "id": 22,
       "title": "L'espace",
       "difficulty": "hard",
       "words": "l'exploration spatiale représente l'un des plus grands défis scientifiques et technologiques auxquels l'humanité est confrontée depuis plusieurs décennies"
     },
     {
-      "id": 9,
-      "title": "La musique",
-      "difficulty": "easy",
-      "words": "la musique adoucit les mœurs et rassemble les gens autour de mélodies universelles qui touchent le cœur et l'âme"
-    },
-    {
-      "id": 10,
+      "id": 23,
       "title": "Le développement durable",
       "difficulty": "hard",
-      "words": "la transition écologique nécessite une transformation profonde de nos modèles économiques et de nos habitudes de consommation pour préserver les ressources naturelles"
+      "words": "la transition écologique nécessite une transformation profonde de nos modèles économiques et de nos habitudes de consommation pour préserver nos précieuses ressources naturelles"
+    },
+    {
+      "id": 24,
+      "title": "La mécanique quantique",
+      "difficulty": "hard",
+      "words": "la mécanique quantique est une branche de la physique théorique qui étudie les phénomènes fondamentaux à l'échelle subatomique avec des concepts mathématiques hautement contre intuitifs"
+    },
+    {
+      "id": 25,
+      "title": "Les abysses",
+      "difficulty": "hard",
+      "words": "l'exploration sous marine des abysses océaniques révèle l'existence d'écosystèmes complexes capables de survivre dans des conditions de pression absolue et d'obscurité totale"
+    },
+    {
+      "id": 26,
+      "title": "Les neurosciences",
+      "difficulty": "hard",
+      "words": "les neurosciences cognitives cherchent inlassablement à décrypter et comprendre les mécanismes cérébraux complexes qui orchestrent nos pensées et nos multiples comportements sociaux"
+    },
+    {
+      "id": 27,
+      "title": "La relativité générale",
+      "difficulty": "hard",
+      "words": "la théorie de la relativité a bouleversé notre compréhension fondamentale de l'univers en décrivant la gravitation comme une courbure continue de l'espace temps générée par la masse"
+    },
+    {
+      "id": 28,
+      "title": "La philosophie",
+      "difficulty": "hard",
+      "words": "le courant philosophique des lumières a très profondément influencé les sociétés modernes occidentales en promouvant les valeurs humanistes de liberté de tolérance et de progrès scientifique"
+    },
+    {
+      "id": 29,
+      "title": "La génétique moléculaire",
+      "difficulty": "hard",
+      "words": "l'étude approfondie de la génétique moléculaire et des structures de l'adn permet désormais d'envisager des thérapies géniques innovantes pour soigner certaines maladies chroniques très rares"
+    },
+    {
+      "id": 30,
+      "title": "La cryptomonnaie",
+      "difficulty": "hard",
+      "words": "la technologie sous jacente de la chaîne de blocs garantit théoriquement des transactions numériques parfaitement sécurisées décentralisées et transparentes sans nécessiter le moindre intermédiaire financier"
+    },
+    {
+      "id": 31,
+      "title": "Les chaussettes",
+      "difficulty": "fourche-langue",
+      "words": "les chaussettes de l'archiduchesse sont elles sèches archi sèches"
+    },
+    {
+      "id": 32,
+      "title": "Le chasseur",
+      "difficulty": "fourche-langue",
+      "words": "un chasseur sachant chasser doit savoir chasser sans son chien de chasse"
+    },
+    {
+      "id": 33,
+      "title": "Les scies",
+      "difficulty": "fourche-langue",
+      "words": "si six scies scient six cyprès six cent six scies scient six cent six cyprès"
+    },
+    {
+      "id": 34,
+      "title": "Les truites",
+      "difficulty": "fourche-langue",
+      "words": "trois petites truites cuites trois petites truites crues"
+    },
+    {
+      "id": 35,
+      "title": "Les jacinthes",
+      "difficulty": "fourche-langue",
+      "words": "seize jacinthes sèchent dans seize sachets secs"
+    },
+    {
+      "id": 36,
+      "title": "Rosalie",
+      "difficulty": "fourche-langue",
+      "words": "la robe rouge de rosalie est ravissante"
+    },
+    {
+      "id": 37,
+      "title": "Jasmin et jonquilles",
+      "difficulty": "fourche-langue",
+      "words": "je veux et j'exige du jasmin et des jonquilles"
+    },
+    {
+      "id": 38,
+      "title": "Panier piano",
+      "difficulty": "fourche-langue",
+      "words": "panier piano panier piano panier piano panier piano panier piano"
+    },
+    {
+      "id": 39,
+      "title": "La pie",
+      "difficulty": "fourche-langue",
+      "words": "la pie niche haut l'oie niche bas l'hibou niche ni haut ni bas l'hibou niche pas"
+    },
+    {
+      "id": 40,
+      "title": "Gros gras grain",
+      "difficulty": "fourche-langue",
+      "words": "gros gras grand grain d'orge tout gros gras grand grain d'orgé quand te dé gros gras grand grain d'orgeras tu"
     }
   ]
 }
